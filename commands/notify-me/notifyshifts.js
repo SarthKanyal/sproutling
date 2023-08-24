@@ -186,13 +186,21 @@ module.exports = {
     await channel.send({ content: "Friday shifts:", components: [fridayRow] });
 
     //confirm button
-    const confirmBtn = new ButtonBuilder()
+    const confirmEmailBtn = new ButtonBuilder()
       .setCustomId("notify_confirm")
-      .setLabel("Confirm")
+      .setLabel("Email Confirm")
       .setStyle(ButtonStyle.Primary);
-    const confirmRow = new ActionRowBuilder().addComponents(confirmBtn);
+    const confirmPingBtn = new ButtonBuilder()
+      .setCustomId("notify_ping")
+      .setLabel("Ping Confirm")
+      .setStyle(ButtonStyle.Secondary);
+    const confirmRow = new ActionRowBuilder().addComponents([
+      confirmEmailBtn,
+      confirmPingBtn,
+    ]);
     await interaction.followUp({
-      content: "Press confirm and fill out the email confirmation form!",
+      content:
+        "Press confirm email and fill out the form to receive email notifs or press confirm ping to just recieve a discord ping for shift coverage!!",
       components: [confirmRow],
     });
   },

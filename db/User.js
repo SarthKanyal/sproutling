@@ -18,18 +18,21 @@ const UserSchema = new Schema({
   notifs: {
     type: [String],
   },
-  notify: { type: Boolean, default: false },
+  notify: { type: String, enum: ["email", "ping"] },
   name: {
     type: String,
   },
   email: {
     type: String,
-    unique: true,
     minLength: 10,
+    sparse: true,
     validate: {
       validator: validator.isEmail,
       message: "Please provide a valid email",
     },
+  },
+  pending: {
+    type: Boolean,
   },
 });
 

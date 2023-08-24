@@ -27,6 +27,7 @@ const typeToShift = {
   "cafe-prep": "CP",
   "community-eats": "CE",
 };
+
 module.exports = {
   name: "isStringSelectMenu",
   async interactionHandler(interaction) {
@@ -63,15 +64,20 @@ module.exports = {
       );
       //a non existing user is someone who will be making their first notification shift selection so we create the user here
     } else {
-      const newUser = await User.create({
-        discordId: discordId,
-        notifs: JSON.stringify(shiftReps),
-      });
+      try {
+        const newUser = await User.create({
+          discordId: discordId,
+          notifs: JSON.stringify(shiftReps),
+        });
+        console.log(newUser);
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     //inform user that notif shifts have been reigstered
     await interaction.reply({
-      content: `Received ${replyDay} shift notification requests, remember to press confirm in notify-me channel!`,
+      content: `Received ${replyDay} shift notification requests, remember to press one of the confirm buttons in the notify-me channel!`,
       ephemeral: true,
     });
   },

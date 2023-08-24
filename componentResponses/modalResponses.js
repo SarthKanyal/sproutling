@@ -8,26 +8,46 @@ function getChannelCategory(interaction) {
 module.exports = {
   name: "isModalSubmit",
   async interactionHandler(interaction) {
-    const name = interaction.fields.getTextInputValue("confirmNameInput");
-    const email = interaction.fields.getTextInputValue("confirmEmailInput");
-    const discordId = interaction.user.id;
-    const shift = interaction.user?.shiftChoice;
+    console.log(interaction.customId);
+    let discordId = "";
+    let name = "";
+    let email = "";
+    let shift = "";
+
+    if (interaction.customId === "nameConfirm") {
+      name = interaction.fields.getTextInputValue("confirmName");
+      discordId = interaction.user.id;
+      shift = interaction.user?.shiftChoice;
+    } else {
+      name = interaction.fields.getTextInputValue("confirmNameInput");
+      email = interaction.fields.getTextInputValue("confirmEmailInput");
+      discordId = interaction.user.id;
+      shift = interaction.user?.shiftChoice;
+    }
 
     if (getChannelCategory(interaction) === "vollie-confirm") {
       // await User.create({discordId:String(discordId),role:"vollie",})
-      const vollieRole = interaction.guild.roles.cache.find(
-        (role) => role.name === "vollie"
+
+      const isShifLead = interaction.member.roles.cache.some(
+        (role) => role.name === "shift-lead"
       );
 
       try {
         await User.create({
           discordId: discordId,
-          role: "vollie",
+          role: isShifLead ? "shiftlead" : "vollie",
           shift: shift,
           name: name,
           email: email,
         });
-        interaction.member.roles.add(vollieRole);
+
+        if (!isShifLead) {
+          const vollieRole = interaction.guild.roles.cache.find(
+            (role) => role.name === "vollie"
+          );
+
+          interaction.member.roles.add(vollieRole);
+        }
         await interaction.reply({
           content: "Registered!",
           ephemeral: true,
@@ -46,15 +66,24 @@ module.exports = {
         //existing user can only have a role if they have filled the vollie confirm form hence they cannot be assigned the sprout role
         // if (!existingUser.role) {
         //user must be an interested sprout since they don't have vollie role so here we assign them the sprout role and add their email and name
-        await User.findOneAndUpdate(
-          { discordId: discordId },
-          { role: "sprout", name: name, email: email, notify: true },
-          { new: true, runValidators: true }
-        );
-        const vollieRole = interaction.guild.roles.cache.find(
-          (role) => role.name === "sprout"
-        );
-        interaction.member.roles.add(vollieRole);
+        if (existingUser.notify) {
+          await User.findOneAndUpdate(
+            { discordId: discordId },
+            {
+              name: name,
+            }
+          );
+        } else {
+          await User.findOneAndUpdate(
+            { discordId: discordId },
+            { role: "sprout", name: name, email: email, notify: "email" },
+            { new: true, runValidators: true }
+          );
+          const vollieRole = interaction.guild.roles.cache.find(
+            (role) => role.name === "sprout"
+          );
+          interaction.member.roles.add(vollieRole);
+        }
         // } else {
         //   //user already has a role ie vollie so we only update their notify field here to filter for notifying later
         //   await User.findOneAndUpdate(
